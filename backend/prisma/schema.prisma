@@ -1,0 +1,119 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  VIEWER
+}
+
+enum FieldType {
+  TEXT
+  NUMBER
+  DATE
+  BOOLEAN
+}
+
+enum ContractStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+}
+
+model Tenant {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+
+  users     User[]
+  template  ContractTemplate?
+  contracts Contract[]
+}
+
+model User {
+  id           String   @id @default(uuid())
+  tenantId     String
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(VIEWER)
+  createdAt    DateTime @default(now())
+
+  tenant  Tenant            @relation(fields: [tenantId], references: [id])
+  history ContractHistory[]
+
+  @@index([tenantId])
+}
+
+model ContractTemplate {
+  id        String   @id @default(uuid())
+  tenantId  String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant Tenant          @relation(fields: [tenantId], references: [id])
+  fields TemplateField[]
+}
+
+model TemplateField {
+  id         String           @id @default(uuid())
+  templateId String
+  name       String
+  type       FieldType
+  required   Boolean          @default(false)
+  order      Int              @default(0)
+  template   ContractTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@index([templateId])
+}
+
+model Contract {
+  id         String         @id @default(uuid())
+  tenantId   String
+  templateId String
+  status     ContractStatus @default(DRAFT)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  tenant      Tenant               @relation(fields: [tenantId], references: [id])
+  fieldValues ContractFieldValue[]
+  history     ContractHistory[]
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, createdAt])
+}
+
+model ContractFieldValue {
+  id         String    @id @default(uuid())
+  contractId String
+  fieldName  String
+  fieldType  FieldType
+  required   Boolean   @default(false)
+  value      String?
+
+  contract Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@index([contractId])
+}
+
+model ContractHistory {
+  id         String   @id @default(uuid())
+  contractId String
+  changedBy  String
+  field      String
+  oldValue   String?
+  newValue   String?
+  changedAt  DateTime @default(now())
+
+  contract Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [changedBy], references: [id])
+
+  @@index([contractId])
+}
