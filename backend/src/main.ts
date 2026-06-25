@@ -20,6 +20,6 @@ async function bootstrap() {
   await app.listen(port);
 
   console.log(`API running on port ${port}`);
-
 }
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 bootstrap();
