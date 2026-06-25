@@ -26,11 +26,13 @@ Thumbs.db
 .idea
 
 # Prisma
+backend/generated/
 **/prisma/migrations/**/migration_lock.toml
 
 # Next.js
 frontend/.next
 frontend/out
+frontend/next-env.d.ts
 
 # NestJS
 backend/dist
