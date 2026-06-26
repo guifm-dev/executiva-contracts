@@ -44,8 +44,8 @@ model User {
   role         Role     @default(VIEWER)
   createdAt    DateTime @default(now())
 
-  tenant  Tenant            @relation(fields: [tenantId], references: [id])
-  history ContractHistory[]
+  tenant Tenant         @relation(fields: [tenantId], references: [id])
+  history   ContractHistory[]
 
   @@index([tenantId])
 }
@@ -82,7 +82,7 @@ model Contract {
 
   tenant      Tenant               @relation(fields: [tenantId], references: [id])
   fieldValues ContractFieldValue[]
-  history     ContractHistory[]
+  history        ContractHistory[]
 
   @@index([tenantId])
   @@index([tenantId, status])
