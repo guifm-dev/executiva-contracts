@@ -1,4 +1,4 @@
-FROM node:22-alpine AS builder
+FROM node:24-alpine AS builder
 
 WORKDIR /app
 
@@ -11,7 +11,7 @@ COPY . .
 
 RUN npm run build
 
-FROM node:22-alpine AS runner
+FROM node:24-alpine AS runner
 
 WORKDIR /app
 
@@ -22,4 +22,4 @@ COPY --from=builder /app/package*.json ./
 
 EXPOSE 3001
 
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main"]
+CMD ["sh", "-c", "DATABASE_URL=$DATABASE_URL npx prisma migrate deploy && DATABASE_URL=$DATABASE_URL npx prisma db seed && node dist/main"]
