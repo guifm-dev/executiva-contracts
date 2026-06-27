@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { TenantModule } from './tenant/tenant.module';
 import { ContractModule } from './contract/contract.module';
 import { HistoryModule } from './history/history.module';
+import { HealthModule } from './health/health.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -15,6 +16,7 @@ import { HistoryModule } from './history/history.module';
     TenantModule,
     ContractModule,
     HistoryModule,
+    HealthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
