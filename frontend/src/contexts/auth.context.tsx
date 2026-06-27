@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("refreshToken", data.refreshToken);
 
     setToken(data.accessToken);
-    router.push("/dashboard");
+    // router.push("/dashboard");
   }
 
   function logout() {
