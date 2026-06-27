@@ -13,20 +13,26 @@ async function main() {
 
   //////////
   // Tenants
-  const tenant1 = await prisma.tenant.create({
-    data: { name: 'Escritório Alpha', slug: 'escritorio-alpha' },
+  const tenant1 = await prisma.tenant.upsert({
+    where: { slug: 'escritorio-alpha' },
+    update: {},
+    create: { name: 'Escritório Alpha', slug: 'escritorio-alpha' },
   });
 
-  const tenant2 = await prisma.tenant.create({
-    data: { name: 'Advocacia Beta', slug: 'advocacia-beta' },
+  const tenant2 = await prisma.tenant.upsert({
+    where: { slug: 'advocacia-beta' },
+    update: {},
+    create: { name: 'Advocacia Beta', slug: 'advocacia-beta' },
   });
 
   //////////
   // Users
   const hash = await bcrypt.hash('123456', 10);
 
-  const admin1 = await prisma.user.create({
-    data: {
+  const admin1 = await prisma.user.upsert({
+    where: { email: 'admin@alpha.com' },
+    update: {},
+    create: {
       tenantId: tenant1.id,
       name: 'Admin Alpha',
       email: 'admin@alpha.com',
@@ -35,8 +41,10 @@ async function main() {
     },
   });
 
-  await prisma.user.create({
-    data: {
+  await prisma.user.upsert({
+    where: { email: 'viewer@alpha.com' },
+    update: {},
+    create: {
       tenantId: tenant1.id,
       name: 'Viewer Alpha',
       email: 'viewer@alpha.com',
@@ -45,8 +53,10 @@ async function main() {
     },
   });
 
-  const admin2 = await prisma.user.create({
-    data: {
+  const admin2 = await prisma.user.upsert({
+    where: { email: 'admin@beta.com' },
+    update: {},
+    create: {
       tenantId: tenant2.id,
       name: 'Admin Beta',
       email: 'admin@beta.com',
@@ -57,8 +67,10 @@ async function main() {
 
   //////////
   // Templates
-  const template1 = await prisma.contractTemplate.create({
-    data: {
+  const template1 = await prisma.contractTemplate.upsert({
+    where: { tenantId: tenant1.id },
+    update: {},
+    create: {
       tenantId: tenant1.id,
       fields: {
         create: [
@@ -92,8 +104,10 @@ async function main() {
     include: { fields: true },
   });
 
-  const template2 = await prisma.contractTemplate.create({
-    data: {
+  const template2 = await prisma.contractTemplate.upsert({
+    where: { tenantId: tenant2.id },
+    update: {},
+    create: {
       tenantId: tenant2.id,
       fields: {
         create: [
@@ -152,44 +166,49 @@ async function main() {
       status: ContractStatus.DRAFT,
     },
   ];
+  const existingContractsT1 = await prisma.contract.count({
+    where: { tenantId: tenant1.id },
+  });
 
-  for (const c of contractsT1) {
-    const contract = await prisma.contract.create({
-      data: {
-        tenantId: tenant1.id,
-        templateId: template1.id,
-        status: c.status,
-        fieldValues: {
-          create: template1.fields.map((field) => ({
-            fieldName: field.name,
-            fieldType: field.type,
-            required: field.required,
-            value: c.fields.find((f) => f.name === field.name)?.value ?? null,
-          })),
+  if (existingContractsT1 === 0) {
+    for (const c of contractsT1) {
+      const contract = await prisma.contract.create({
+        data: {
+          tenantId: tenant1.id,
+          templateId: template1.id,
+          status: c.status,
+          fieldValues: {
+            create: template1.fields.map((field) => ({
+              fieldName: field.name,
+              fieldType: field.type,
+              required: field.required,
+              value: c.fields.find((f) => f.name === field.name)?.value ?? null,
+            })),
+          },
         },
-      },
-    });
+      });
 
-    await prisma.contractHistory.create({
-      data: {
-        contractId: contract.id,
-        changedBy: admin1.id,
-        field: 'status',
-        oldValue: null,
-        newValue: 'DRAFT',
-      },
-    });
-
-    if (c.status !== ContractStatus.DRAFT) {
       await prisma.contractHistory.create({
         data: {
           contractId: contract.id,
           changedBy: admin1.id,
           field: 'status',
-          oldValue: 'DRAFT',
-          newValue: c.status,
+          oldValue: null,
+          newValue: 'DRAFT',
         },
       });
+
+      if (c.status !== ContractStatus.DRAFT) {
+        await prisma.contractHistory.create({
+          data: {
+            contractId: contract.id,
+            changedBy: admin1.id,
+            field: 'status',
+            oldValue: 'DRAFT',
+            newValue: c.status,
+          },
+        });
+      }
     }
   }
 
@@ -213,43 +232,48 @@ async function main() {
       status: ContractStatus.CLOSED,
     },
   ];
+  const existingContractsT2 = await prisma.contract.count({
+    where: { tenantId: tenant2.id },
+  });
 
-  for (const c of contractsT2) {
-    const contract = await prisma.contract.create({
-      data: {
-        tenantId: tenant2.id,
-        templateId: template2.id,
-        status: c.status,
-        fieldValues: {
-          create: template2.fields.map((field) => ({
-            fieldName: field.name,
-            fieldType: field.type,
-            required: field.required,
-            value: c.fields.find((f) => f.name === field.name)?.value ?? null,
-          })),
+  if (existingContractsT2 === 0) {
+    for (const c of contractsT2) {
+      const contract = await prisma.contract.create({
+        data: {
+          tenantId: tenant2.id,
+          templateId: template2.id,
+          status: c.status,
+          fieldValues: {
+            create: template2.fields.map((field) => ({
+              fieldName: field.name,
+              fieldType: field.type,
+              required: field.required,
+              value: c.fields.find((f) => f.name === field.name)?.value ?? null,
+            })),
+          },
         },
-      },
-    });
+      });
 
-    await prisma.contractHistory.create({
-      data: {
-        contractId: contract.id,
-        changedBy: admin2.id,
-        field: 'status',
-        oldValue: null,
-        newValue: 'DRAFT',
-      },
-    });
+      await prisma.contractHistory.create({
+        data: {
+          contractId: contract.id,
+          changedBy: admin2.id,
+          field: 'status',
+          oldValue: null,
+          newValue: 'DRAFT',
+        },
+      });
 
-    await prisma.contractHistory.create({
-      data: {
-        contractId: contract.id,
-        changedBy: admin2.id,
-        field: 'status',
-        oldValue: 'DRAFT',
-        newValue: c.status,
-      },
-    });
+      await prisma.contractHistory.create({
+        data: {
+          contractId: contract.id,
+          changedBy: admin2.id,
+          field: 'status',
+          oldValue: 'DRAFT',
+          newValue: c.status,
+        },
+      });
+    }
   }
 
   console.log('Seed concluído');
