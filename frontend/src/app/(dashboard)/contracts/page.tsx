@@ -33,6 +33,8 @@ export default function ContractsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [page, setPage] = useState(1);
 
   const router = useRouter();
@@ -46,6 +48,8 @@ export default function ContractsPage() {
         limit: "8",
         ...(search && { search }),
         ...(status && { status }),
+        ...(startDate && { startDate }),
+        ...(endDate && { endDate }),
         ...params,
       });
       setData(result);
@@ -66,6 +70,8 @@ export default function ContractsPage() {
   async function clearFilters() {
     setSearch("");
     setStatus("");
+    setStartDate("");
+    setEndDate("");
     setPage(1);
     load({ page: "1" });
   }
@@ -79,7 +85,7 @@ export default function ContractsPage() {
             {data.total} contrato(s) encontrado(s)
           </p>
         </div>
-        <Button size="sm" onClick={() => router.push('/contracts/new')}>
+        <Button size="sm" onClick={() => router.push("/contracts/new")}>
           <Plus size={14} className="mr-1.5" />
           Novo Contrato
         </Button>
@@ -117,6 +123,26 @@ export default function ContractsPage() {
             <SelectItem value="CLOSED">Encerrado</SelectItem>
           </SelectContent>
         </Select>
+
+        <div className="flex items-center gap-2">
+          <Input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="w-40 text-sm"
+            placeholder="Data início"
+          />
+
+          <span className="text-slate-400 text-sm">até</span>
+
+          <Input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="w-40 text-sm"
+            placeholder="Data fim"
+          />
+        </div>
 
         <Button variant="outline" size="sm" onClick={handleSearch}>
           Buscar
