@@ -18,6 +18,7 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 import type { User } from '@prisma/client';
+import { UpdateContractFieldsDto } from './dto/update-contract-fields.dto';
 
 @Controller('contracts')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -38,6 +39,16 @@ export class ContractController {
   @Roles(Role.ADMIN)
   create(@CurrentUser() user: User, @Body() dto: CreateContractDto) {
     return this.contractService.create(user.tenantId, user.id, dto);
+  }
+
+  @Patch(':id/fields')
+  @Roles(Role.ADMIN)
+  updateFields(
+    @CurrentUser() user: User,
+    @Param('id') id: string,
+    @Body() dto: UpdateContractFieldsDto,
+  ) {
+    return this.contractService.updateFields(id, user.tenantId, user.id, dto);
   }
 
   @Patch(':id/status')

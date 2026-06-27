@@ -10,6 +10,7 @@ import { UpdateContractStatusDto } from './dto/update-contract-status.dto';
 import { FilterContractDto } from './dto/filter-contract.dto';
 import { FieldType } from '@prisma/client';
 import type { ContractStatus } from '@prisma/client';
+import { UpdateContractFieldsDto } from './dto/update-contract-fields.dto';
 
 interface WhereQuery {
   tenantId: string;
@@ -87,6 +88,65 @@ export class ContractService {
     });
 
     return contract;
+  }
+
+  async updateFields(
+    id: string,
+    tenantId: string,
+    userId: string,
+    dto: UpdateContractFieldsDto,
+  ) {
+    const contract = await this.prisma.contract.findFirst({
+      where: { id, tenantId },
+      include: { fieldValues: true },
+    });
+
+    if (!contract) throw new NotFoundException('Contrato não encontrado');
+
+    if (contract.status !== 'DRAFT') {
+      throw new BadRequestException(
+        'Apenas contratos em rascunho podem ser editados',
+      );
+    }
+
+    const template = await this.prisma.contractTemplate.findUnique({
+      where: { tenantId },
+      include: { fields: true },
+    });
+
+    for (const input of dto.fields) {
+      const templateField = template?.fields.find((f) => f.name === input.name);
+      if (templateField && input.value) {
+        this.validateFieldType(templateField.type, input.value, input.name);
+      }
+    }
+
+    for (const input of dto.fields) {
+      const existing = contract.fieldValues.find(
+        (f) => f.fieldName === input.name,
+      );
+      if (!existing) continue;
+
+      const oldValue = existing.value;
+      const newValue = input.value ?? null;
+
+      if (oldValue === newValue) continue;
+
+      await this.prisma.contractFieldValue.update({
+        where: { id: existing.id },
+        data: { value: newValue },
+      });
+
+      await this.history.log({
+        contractId: id,
+        changedBy: userId,
+        field: input.name,
+        oldValue,
+        newValue,
+      });
+    }
+
+    return this.findOne(id, tenantId);
   }
 
   async updateStatus(
