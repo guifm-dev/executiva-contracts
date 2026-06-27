@@ -1,8 +1,12 @@
-import { IsArray, ValidateNested } from 'class-validator';
+import { IsArray, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class FieldValueDto {
+  @IsString()
   name: string;
+
+  @IsString()
+  @IsOptional()
   value: string | null;
 }
 

@@ -47,7 +47,10 @@ export class ContractService {
 
       if (
         field.required &&
-        (!input || input.value === null || input.value === '')
+        (!input ||
+          input.value === null ||
+          input.value === '' ||
+          input.value.trim() === '')
       )
         throw new BadRequestException(
           `Campo obrigatório ausente: ${field.name}`,
