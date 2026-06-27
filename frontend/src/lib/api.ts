@@ -24,7 +24,11 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
-    throw new Error(error.message ?? "Erro na requisição");
+    const message = Array.isArray(error.message)
+      ? error.message[0]
+      : error.message ?? "Erro na requisição";
+    
+    throw new Error(message);
   }
 
   return response.json();
