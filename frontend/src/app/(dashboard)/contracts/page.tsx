@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import Link from "next/link";
 import { Search, Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const STATUS_LABELS: Record<string, string> = {
   DRAFT: "Rascunho",
@@ -33,6 +34,8 @@ export default function ContractsPage() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
+
+  const router = useRouter();
 
   async function load(params: Record<string, string> = {}) {
     setLoading(true);
@@ -76,6 +79,10 @@ export default function ContractsPage() {
             {data.total} contrato(s) encontrado(s)
           </p>
         </div>
+        <Button size="sm" onClick={() => router.push('/contracts/new')}>
+          <Plus size={14} className="mr-1.5" />
+          Novo Contrato
+        </Button>
       </div>
 
       <div className="flex gap-3 flex-wrap">

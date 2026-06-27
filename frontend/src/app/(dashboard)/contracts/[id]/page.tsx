@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,6 +33,8 @@ export default function ContractDetailPage() {
   const [loading, setLoading] = useState(true);
   const [newStatus, setNewStatus] = useState("");
   const [updating, setUpdating] = useState(false);
+
+  const router = useRouter();
 
   async function load() {
     const [c, h] = await Promise.all([
@@ -81,6 +83,15 @@ export default function ContractDetailPage() {
             >
               {STATUS_LABELS[contract.status]}
             </span>
+            {contract.status === "DRAFT" && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => router.push(`/contracts/${id}/edit`)}
+              >
+                Editar campos
+              </Button>
+            )}
           </div>
 
           <p className="text-xs text-slate-400 font-mono mt-0.5">
