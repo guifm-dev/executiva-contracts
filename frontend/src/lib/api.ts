@@ -73,6 +73,11 @@ export const api = {
         method: "POST",
         body: JSON.stringify({ fields }),
       }),
+    updateFields: (id: string, fields: any[]) =>
+      request<any>(`/contracts/${id}/fields`, {
+        method: "PATCH",
+        body: JSON.stringify({ fields }),
+      }),
     updateStatus: (id: string, status: string) =>
       request<any>(`/contracts/${id}/status`, {
         method: "PATCH",
