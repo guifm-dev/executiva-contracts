@@ -17,17 +17,27 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   });
 
   if (response.status === 401) {
-    localStorage.removeItem("accessToken");
-    window.location.href = "/login";
-    throw new Error("Não autorizado");
+    const hasToken = !!localStorage.getItem("accessToken");
+
+    if (hasToken) {
+      localStorage.removeItem("accessToken");
+      window.location.href = "/login";
+    }
+
+    const error = await response.json().catch(() => ({}));
+    const message = Array.isArray(error.message)
+      ? error.message[0]
+      : (error.message ?? "Credenciais inválidas");
+
+    throw new Error(message);
   }
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
     const message = Array.isArray(error.message)
       ? error.message[0]
-      : error.message ?? "Erro na requisição";
-    
+      : (error.message ?? "Erro na requisição");
+
     throw new Error(message);
   }
 
