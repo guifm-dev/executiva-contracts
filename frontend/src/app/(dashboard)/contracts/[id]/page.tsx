@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import Link from "next/link";
 import { ArrowLeft, Clock } from "lucide-react";
+import { useAuth } from "@/contexts/auth.context";
 
 const STATUS_LABELS: Record<string, string> = {
   DRAFT: "Rascunho",
@@ -33,6 +34,8 @@ export default function ContractDetailPage() {
   const [loading, setLoading] = useState(true);
   const [newStatus, setNewStatus] = useState("");
   const [updating, setUpdating] = useState(false);
+
+  const { role } = useAuth();
 
   const router = useRouter();
 
@@ -63,6 +66,22 @@ export default function ContractDetailPage() {
     }
   }
 
+  function formatFieldValue(field: { value: any, fieldType: string }) {
+    if(!field) return null;
+
+    let formattedValue = field.value;
+
+    if(field.fieldType === 'BOOLEAN'){
+      formattedValue = field.value ? 'Sim' : 'Não';
+    }
+
+    if(field.fieldType === 'DATE'){
+      formattedValue = new Date(field.value).toLocaleDateString('pt-BR')
+    }
+
+    return formattedValue;
+  }
+
   if (loading) return <p className="text-slate-500">Carregando contrato</p>;
 
   return (
@@ -83,14 +102,24 @@ export default function ContractDetailPage() {
             >
               {STATUS_LABELS[contract.status]}
             </span>
-            {contract.status === "DRAFT" && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => router.push(`/contracts/${id}/edit`)}
-              >
-                Editar campos
-              </Button>
+            {role === "ADMIN" && (
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={contract.status !== "DRAFT"}
+                  onClick={() =>
+                    contract.status === "DRAFT" &&
+                    router.push(`/contracts/${id}/edit`)
+                  }
+                >
+                  Editar campos
+                </Button>
+
+                {contract.status !== "DRAFT" && (
+                  <p className="text-xs text-slate-400">Só é possível editar contratos em rascunho</p>
+                )}
+              </div>
             )}
           </div>
 
@@ -115,7 +144,7 @@ export default function ContractDetailPage() {
             >
               <span className="text-sm text-slate-500">{field.fieldName}</span>
               <span className="text-sm font-medium text-slate-900">
-                {field.value ?? (
+                {formatFieldValue(field) ?? (
                   <span className="text-slate-300 font-normal">-</span>
                 )}
               </span>
@@ -124,30 +153,34 @@ export default function ContractDetailPage() {
         </div>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-lg p-4 space-y-3">
-        <h3 className="text-sm font-semibold text-slate-700">Alterar status</h3>
-        <div className="flex items-center gap-3">
-          <Select value={newStatus} onValueChange={setNewStatus}>
-            <SelectTrigger className="w-44 text-sm">
-              <SelectValue />
-            </SelectTrigger>
+      {role === "ADMIN" && (
+        <div className="bg-white border border-slate-200 rounded-lg p-4 space-y-3">
+          <h3 className="text-sm font-semibold text-slate-700">
+            Alterar status
+          </h3>
+          <div className="flex items-center gap-3">
+            <Select value={newStatus} onValueChange={setNewStatus}>
+              <SelectTrigger className="w-44 text-sm">
+                <SelectValue />
+              </SelectTrigger>
 
-            <SelectContent>
-              <SelectItem value="DRAFT">Rascunho</SelectItem>
-              <SelectItem value="ACTIVE">Ativo</SelectItem>
-              <SelectItem value="CLOSED">Encerrado</SelectItem>
-            </SelectContent>
-          </Select>
+              <SelectContent>
+                <SelectItem value="DRAFT">Rascunho</SelectItem>
+                <SelectItem value="ACTIVE">Ativo</SelectItem>
+                <SelectItem value="CLOSED">Encerrado</SelectItem>
+              </SelectContent>
+            </Select>
 
-          <Button
-            size="sm"
-            disabled={updating || newStatus === contract.status}
-            onClick={updateStatus}
-          >
-            Confirmar
-          </Button>
+            <Button
+              size="sm"
+              disabled={updating || newStatus === contract.status}
+              onClick={updateStatus}
+            >
+              Confirmar
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="space-y-3">
         <div className="flex items-center gap-2">
