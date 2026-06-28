@@ -15,6 +15,7 @@ import {
 import Link from "next/link";
 import { Search, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/auth.context";
 
 const STATUS_LABELS: Record<string, string> = {
   DRAFT: "Rascunho",
@@ -36,6 +37,8 @@ export default function ContractsPage() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [page, setPage] = useState(1);
+
+  const { role } = useAuth();
 
   const router = useRouter();
 
@@ -73,7 +76,14 @@ export default function ContractsPage() {
     setStartDate("");
     setEndDate("");
     setPage(1);
-    load({ page: "1" });
+
+    setLoading(true);
+    try {
+      const result = await api.contracts.list({ page: "1", limit: "8" });
+      setData(result);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -85,10 +95,12 @@ export default function ContractsPage() {
             {data.total} contrato(s) encontrado(s)
           </p>
         </div>
-        <Button size="sm" onClick={() => router.push("/contracts/new")}>
-          <Plus size={14} className="mr-1.5" />
-          Novo Contrato
-        </Button>
+        {role === "ADMIN" && (
+          <Button size="sm" onClick={() => router.push("/contracts/new")}>
+            <Plus size={14} className="mr-1.5" />
+            Novo Contrato
+          </Button>
+        )}
       </div>
 
       <div className="flex gap-3 flex-wrap">
