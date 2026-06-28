@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { FileText, CheckCircle, Clock, XCircle } from "lucide-react";
 
 interface ContractSummary {
@@ -26,8 +27,8 @@ export default function DashboardPage() {
       try {
         const [all, active, draft, closed] = await Promise.all([
           api.contracts.list(),
-          api.contracts.list({ status: "DRAFT" }),
           api.contracts.list({ status: "ACTIVE" }),
+          api.contracts.list({ status: "DRAFT" }),
           api.contracts.list({ status: "CLOSED" }),
         ]);
         setSummary({
@@ -84,7 +85,19 @@ export default function DashboardPage() {
       </div>
 
       {loading ? (
-        <p className="text-slate-500">Carregando...</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <Card key={index}>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-8 w-8" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-9 w-14" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {cards.map(({ label, value, icon: Icon, color, bg }) => (
