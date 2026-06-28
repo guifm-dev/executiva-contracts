@@ -9,9 +9,9 @@ cp .env.example .env
 docker compose up --build
 ```
 
-- Frontend: http://localhost:3000
-- API: http://localhost:3001/api
-- Healthcheck: http://localhost:3001/api/health
+- Frontend: <http://localhost:3000>
+- API: <http://localhost:3001/api>
+- Healthcheck: <http://localhost:3001/api/health>
 
 ## Seed
 
@@ -21,9 +21,9 @@ Credenciais:
 
 | Perfil | E-mail | Senha | Tenant |
 | --- | --- | --- | --- |
-| Admin | admin@alpha.com | 123456 | Escritório Alpha |
-| Viewer | viewer@alpha.com | 123456 | Escritório Alpha |
-| Admin | admin@beta.com | 123456 | Advocacia Beta |
+| Admin | <admin@alpha.com> | 123456 | Escritório Alpha |
+| Viewer | <viewer@alpha.com> | 123456 | Escritório Alpha |
+| Admin | <admin@beta.com> | 123456 | Advocacia Beta |
 
 Seed inclui 2 tenants, 3 usuários, templates e 5 contratos.
 
