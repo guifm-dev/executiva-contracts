@@ -41,6 +41,8 @@ export default function EditContractPage() {
         initialValues={contract.fieldValues?.map((f: any) => ({
           name: f.fieldName,
           value: f.value,
+          type: f.fieldType,
+          required: f.required,
         }))}
       />
     </div>
