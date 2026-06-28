@@ -23,7 +23,7 @@ O backend vai rodar as migrations e popular o banco com dados de teste (seed) au
 
 O banco já sobe com 2 tenants e 5 contratos. Pode usar esses logins na tela inicial:
 
-| Perfil | E-mail | Senha | Empresa (Tenant) |
+| Perfil | E-mail | Senha | Tenant |
 | :--- | :--- | :--- | :--- |
 | **Admin** | `admin@alpha.com` | `123456` | Escritório Alpha |
 | **Viewer** | `viewer@alpha.com` | `123456` | Escritório Alpha |
@@ -33,21 +33,31 @@ O banco já sobe com 2 tenants e 5 contratos. Pode usar esses logins na tela ini
 
 ## Resumo das Decisões Técnicas
 
-- **Next.js:** Escolhi focar no ecossistema do Next.js para construir o frontend e consumir a API (Obs: A especificação mencionava Next.js e Vite como obrigatórios, mas como o Next.js já possui seu próprio bundler interno Webpack/Turbopack, o uso do Vite se torna redundante nesta stack, então optei por seguir o padrão oficial do framework).
-- **Isolamento de Dados (Multi-tenant):** Cada usuário está vinculado a um `tenantId`. A API verifica isso no token JWT e filtra nas consultas do Prisma, garantindo que um usuário não veja os contratos de outra empresa.
-- **Contratos e Templates:** Para não afetar contratos antigos se um template mudar no futuro, o sistema cria um snapshot dos campos do template e salva em formato JSON dentro do contrato no momento da criação.
-- **Histórico de Alterações:** Toda vez que um contrato é criado, editado ou muda de status, a API salva um registro na tabela `ContractHistory` mostrando os valores alterados.
-- **Simplificações do Teste:** O refresh token é gerado normalmente pelo backend, mas não implementei a lógica de renovação automática (interceptor) no frontend. Também não criei um versionamento de templates para avisar o usuário se um contrato usa um modelo muito antigo.
+- **Next.js:** A especificação mencionava Next.js e Vite como obrigatórios simultaneamente, o que é incompatível — Next.js possui bundler próprio (Webpack/Turbopack). Optei por seguir o padrão oficial do framework com Next.js 15 e App Router.
+- **Isolamento de Dados (Multi-tenancy):** Adotei row-level tenancy — toda tabela relevante possui `tenantId`. A API valida o tenant via payload do JWT e injeta o filtro em todas as queries do Prisma, garantindo isolamento real entre empresas.
+- **Contratos e Templates:** Ao criar um contrato, os campos do template ativo são copiados como `ContractFieldValue`, criando um snapshot imutável. Alterações futuras no template não afetam contratos já gerados.
+- **Histórico de Alterações:** Toda criação, edição de campo ou mudança de status registra uma entrada em `ContractHistory` com campo, valor anterior, valor novo, usuário e timestamp.
+- **Autenticação:** JWT com access token (15min) e refresh token (7d). No frontend os tokens são armazenados em localStorage — decisão pragmática para o escopo do teste. Em produção usaria httpOnly cookies para mitigar XSS.
+- **Simplificações documentadas:** Renovação automática via refresh token não foi implementada no frontend (exigiria interceptor com fila de retry). Versionamento de templates também foi omitido por estar fora do escopo do teste.
 
----
+## Testes
+
+```bash
+cd backend
+npm run test:e2e
+```
+
+5 testes E2E cobrindo: onboarding, autenticação, fluxo completo de contrato e rastreabilidade do histórico.
 
 ## Scripts Úteis
 
 ```bash
-cd /backend
+# Backend
+cd backend
 npm run test:e2e
 npm run build
 
-cd /frontend
+# Frontend  
+cd frontend
 npm run build
 ```
