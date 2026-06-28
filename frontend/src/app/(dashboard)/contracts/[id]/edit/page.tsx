@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { api } from "@/lib/api";
 import ContractForm from "@/components/contract-form";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function EditContractPage() {
   const { id } = useParams<{ id: string }>();
@@ -17,7 +18,22 @@ export default function EditContractPage() {
     });
   }, [id]);
 
-  if (loading) return <p className="text-slate-500">Carregando</p>;
+  if (loading) {
+    return (
+      <div className="max-w-xl space-y-6">
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-4 w-full max-w-md" />
+        </div>
+        {Array.from({ length: 3 }).map((_, index) => (
+          <div key={index} className="space-y-2">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   if (contract.status !== "DRAFT") {
     return (

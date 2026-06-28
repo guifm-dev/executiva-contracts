@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -87,7 +88,21 @@ export default function TemplatePage() {
     }
   }
 
-  if (loading) return <p className="text-slate-500">Carregando Template</p>;
+  if (loading) {
+    return (
+      <div className="max-w-2xl space-y-6">
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-4 w-full max-w-lg" />
+        </div>
+        <div className="space-y-2">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <Skeleton key={index} className="h-14 w-full" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl space-y-6">

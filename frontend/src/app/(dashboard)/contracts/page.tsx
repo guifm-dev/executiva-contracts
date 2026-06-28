@@ -5,6 +5,7 @@ import { api } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -185,14 +186,25 @@ export default function ContractsPage() {
           </thead>
           <tbody>
             {loading && (
-              <tr>
-                <td
-                  colSpan={5}
-                  className="px-4 py-8 text-center text-slate-400"
-                >
-                  Carregando
-                </td>
-              </tr>
+              Array.from({ length: 6 }).map((_, index) => (
+                <tr key={index} className="border-b border-slate-100">
+                  <td className="px-4 py-3">
+                    <Skeleton className="h-4 w-16" />
+                  </td>
+                  <td className="px-4 py-3">
+                    <Skeleton className="h-5 w-20 rounded-full" />
+                  </td>
+                  <td className="px-4 py-3">
+                    <Skeleton className="h-4 w-64 max-w-full" />
+                  </td>
+                  <td className="px-4 py-3">
+                    <Skeleton className="h-4 w-20" />
+                  </td>
+                  <td className="px-4 py-3">
+                    <Skeleton className="ml-auto h-4 w-8" />
+                  </td>
+                </tr>
+              ))
             )}
             {!loading && data.data.length === 0 && (
               <tr>
