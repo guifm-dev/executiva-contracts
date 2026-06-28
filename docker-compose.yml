@@ -40,6 +40,9 @@ services:
       dockerfile: Dockerfile
     container_name: executiva_frontend
     env_file: .env
+    environment:
+      - HOSTNAME=0.0.0.0
+      - PORT=3000
     ports:
       - "3000:3000"
     depends_on:
