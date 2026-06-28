@@ -6,11 +6,30 @@ import { PrismaService } from './../src/prisma/prisma.service';
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import request from 'supertest';
 
+interface OnboardResponse {
+  accessToken: string;
+  refreshToken: string;
+  tenant: {
+    id: string;
+    slug: string;
+  };
+}
+
+interface ContractResponse {
+  id: string;
+  status: string;
+  fieldValues: unknown[];
+}
+
+interface HistoryResponse {
+  oldValue: string | null;
+  newValue: string | null;
+}
+
 describe('Executiva Contracts (e2e)', () => {
   let app: INestApplication<App>;
   let prisma: PrismaService;
   let accessToken: string;
-  let tenantId: string;
   let contractId: string;
 
   beforeAll(async () => {
@@ -66,12 +85,13 @@ describe('Executiva Contracts (e2e)', () => {
       })
       .expect(201);
 
-    expect(res.body).toHaveProperty('accessToken');
-    expect(res.body).toHaveProperty('refreshToken');
-    expect(res.body.tenant).toHaveProperty('slug', 'empresa-e2e');
+    const body = res.body as OnboardResponse;
 
-    accessToken = res.body.accessToken;
-    tenantId = res.body.tenant.id;
+    expect(body).toHaveProperty('accessToken');
+    expect(body).toHaveProperty('refreshToken');
+    expect(body.tenant).toHaveProperty('slug', 'empresa-e2e');
+
+    accessToken = body.accessToken;
   });
 
   it('POST /api/auth/login - return tokens with valid credentials', async () => {
@@ -112,11 +132,13 @@ describe('Executiva Contracts (e2e)', () => {
       })
       .expect(201);
 
-    expect(res.body).toHaveProperty('id');
-    expect(res.body.status).toBe('DRAFT');
-    expect(res.body.fieldValues).toHaveLength(2);
+    const body = res.body as ContractResponse;
 
-    contractId = res.body.id;
+    expect(body).toHaveProperty('id');
+    expect(body.status).toBe('DRAFT');
+    expect(body.fieldValues).toHaveLength(2);
+
+    contractId = body.id;
   });
 
   it('PATCH /api/contracts/:id/status + GET /api/contracts/:id/history - correct history/logs', async () => {
@@ -131,10 +153,12 @@ describe('Executiva Contracts (e2e)', () => {
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(200);
 
-    expect(res.body.length).toBeGreaterThanOrEqual(2);
+    const body = res.body as HistoryResponse[];
 
-    const statusChange = res.body.find(
-      (h: any) => h.oldValue === 'DRAFT' && h.newValue === 'ACTIVE',
+    expect(body.length).toBeGreaterThanOrEqual(2);
+
+    const statusChange = body.find(
+      (h) => h.oldValue === 'DRAFT' && h.newValue === 'ACTIVE',
     );
 
     expect(statusChange).toBeDefined();
