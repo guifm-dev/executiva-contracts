@@ -23,6 +23,8 @@ services:
       dockerfile: Dockerfile
     container_name: executiva_api
     env_file: .env
+    environment:
+      - TZ=America/Sao_Paulo
     ports:
       - "3001:3001"
     depends_on:

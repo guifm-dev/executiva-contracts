@@ -191,8 +191,12 @@ export class ContractService {
     if (status) where.status = status;
     if (startDate || endDate) {
       where.createdAt = {};
-      if (startDate) where.createdAt.gte = new Date(startDate);
-      if (endDate) where.createdAt.lte = new Date(endDate);
+      if (startDate) {
+        where.createdAt.gte = new Date(`${startDate}T00:00:00`);
+      }
+      if (endDate) {
+        where.createdAt.lte = new Date(`${endDate}T23:59:59.999`);
+      }
     }
 
     if (search) {
