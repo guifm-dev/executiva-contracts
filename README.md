@@ -1,29 +1,29 @@
 # Executiva Contracts - Desafio Técnico
 
-Plataforma SaaS multi-tenant para gestão de contratos. Desenvolvida com NestJS, Next.js, Prisma e PostgreSQL, com foco no isolamento de dados e rastreabilidade.
+Plataforma multi-tenant para gestão de contratos, desenvolvida para o processo seletivo com NestJS, Next.js, Prisma e PostgreSQL.
 
 ## Como rodar o projeto
 
-Certifique-se de ter o Docker instalado e rode os comandos abaixo na raiz do projeto:
+Com o Docker instalado, abra o terminal na raiz do projeto e rode:
 
 ```bash
 cp .env.example .env
-docker compose up --build -d
+docker compose up --build
 ```
 
-A inicialização do contêiner da API executa automaticamente o `prisma migrate deploy` e o `prisma db seed`.
+O backend vai rodar as migrations e popular o banco com dados de teste (seed) automaticamente.
 
 - **Frontend:** <http://localhost:3000>
-- **API Base:** <http://localhost:3001/api>
+- **API:** <http://localhost:3001/api>
 - **Healthcheck:** <http://localhost:3001/api/health>
 
 ---
 
 ## Seed
 
-O banco já sobe populado com 2 tenants, templates estruturados e 5 contratos. Utilize os acessos abaixo:
+O banco já sobe com 2 tenants e 5 contratos. Pode usar esses logins na tela inicial:
 
-| Perfil | E-mail | Senha | Tenant |
+| Perfil | E-mail | Senha | Empresa (Tenant) |
 | :--- | :--- | :--- | :--- |
 | **Admin** | `admin@alpha.com` | `123456` | Escritório Alpha |
 | **Viewer** | `viewer@alpha.com` | `123456` | Escritório Alpha |
@@ -31,23 +31,23 @@ O banco já sobe populado com 2 tenants, templates estruturados e 5 contratos. U
 
 ---
 
-## Decisões Técnicas e Arquitetura
+## Resumo das Decisões Técnicas
 
-- **Next.js vs Vite:** A especificação citava ambos. Optei pelo Next.js (App Router) por seu ecossistema nativo e robustez, sendo a escolha ideal para escalar um SaaS.
-- **Multi-tenancy Real:** O `tenantId` é extraído via JWT e injetado diretamente nas consultas do Prisma. Isso garante isolamento em nível de banco, prevenindo vazamento de dados entre empresas.
-- **Imutabilidade de Contratos:** Para que edições no *Template* não afetem os contratos antigos, o backend salva um *snapshot* (cópia estrutural no formato `Json`) do template no momento exato em que o contrato é gerado.
-- **Histórico:** Qualquer mutação em um contrato (criação, edição de campos ou status) grava automaticamente um registro estruturado na tabela `ContractHistory`, contendo o valor antigo e o novo.
-- **Trade-offs (Escopo MVP):** Para focar nos requisitos core, o *refresh token* é gerado no backend, mas sem a lógica de renovação automática/interceptors no frontend. O controle de desatualização de templates exigiria versionamento (`v1`, `v2`), o que mantive fora desta versão.
+- **Next.js:** Escolhi focar no ecossistema do Next.js para construir o frontend e consumir a API (Obs: A especificação mencionava Next.js e Vite como obrigatórios, mas como o Next.js já possui seu próprio bundler interno Webpack/Turbopack, o uso do Vite se torna redundante nesta stack, então optei por seguir o padrão oficial do framework).
+- **Isolamento de Dados (Multi-tenant):** Cada usuário está vinculado a um `tenantId`. A API verifica isso no token JWT e filtra nas consultas do Prisma, garantindo que um usuário não veja os contratos de outra empresa.
+- **Contratos e Templates:** Para não afetar contratos antigos se um template mudar no futuro, o sistema cria um snapshot dos campos do template e salva em formato JSON dentro do contrato no momento da criação.
+- **Histórico de Alterações:** Toda vez que um contrato é criado, editado ou muda de status, a API salva um registro na tabela `ContractHistory` mostrando os valores alterados.
+- **Simplificações do Teste:** O refresh token é gerado normalmente pelo backend, mas não implementei a lógica de renovação automática (interceptor) no frontend. Também não criei um versionamento de templates para avisar o usuário se um contrato usa um modelo muito antigo.
 
 ---
 
-## Scripts Úteis (Desenvolvimento Local)
+## Scripts Úteis
 
 ```bash
-# Testes E2E
-cd apps/backend && npm run test:e2e
+cd /backend
+npm run test:e2e
+npm run build
 
-# Build
-cd apps/backend && npm run build
-cd apps/frontend && npm run build
+cd /frontend
+npm run build
 ```
