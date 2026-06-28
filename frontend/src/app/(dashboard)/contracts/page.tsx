@@ -238,7 +238,7 @@ export default function ContractsPage() {
                     {contract.fieldValues?.slice(0, 2).map((f: any) => (
                       <span key={f.id} className="mr-2">
                         <span className="text-slate-400">{f.fieldName}:</span>{" "}
-                        {formatFieldValue(f.value) ?? "-"}
+                        {formatFieldValue(f) ?? "-"}
                       </span>
                     ))}
                   </td>
