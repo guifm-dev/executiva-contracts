@@ -17,6 +17,7 @@ import Link from "next/link";
 import { Search, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth.context";
+import { formatFieldValue } from "@/lib/utils";
 
 const STATUS_LABELS: Record<string, string> = {
   DRAFT: "Rascunho",
@@ -185,7 +186,7 @@ export default function ContractsPage() {
             </tr>
           </thead>
           <tbody>
-            {loading && (
+            {loading &&
               Array.from({ length: 6 }).map((_, index) => (
                 <tr key={index} className="border-b border-slate-100">
                   <td className="px-4 py-3">
@@ -204,8 +205,7 @@ export default function ContractsPage() {
                     <Skeleton className="ml-auto h-4 w-8" />
                   </td>
                 </tr>
-              ))
-            )}
+              ))}
             {!loading && data.data.length === 0 && (
               <tr>
                 <td
@@ -238,7 +238,7 @@ export default function ContractsPage() {
                     {contract.fieldValues?.slice(0, 2).map((f: any) => (
                       <span key={f.id} className="mr-2">
                         <span className="text-slate-400">{f.fieldName}:</span>{" "}
-                        {f.value ?? "-"}
+                        {formatFieldValue(f.value) ?? "-"}
                       </span>
                     ))}
                   </td>

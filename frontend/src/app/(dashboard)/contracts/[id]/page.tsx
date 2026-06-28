@@ -15,6 +15,7 @@ import {
 import Link from "next/link";
 import { ArrowLeft, Clock } from "lucide-react";
 import { useAuth } from "@/contexts/auth.context";
+import { formatFieldValue } from "@/lib/utils";
 
 const STATUS_LABELS: Record<string, string> = {
   DRAFT: "Rascunho",
@@ -65,22 +66,6 @@ export default function ContractDetailPage() {
     } finally {
       setUpdating(false);
     }
-  }
-
-  function formatFieldValue(field: { value: any, fieldType: string }) {
-    if(!field) return null;
-
-    let formattedValue = field.value;
-
-    if(field.fieldType === 'BOOLEAN'){
-      formattedValue = field.value ? 'Sim' : 'Não';
-    }
-
-    if(field.fieldType === 'DATE'){
-      formattedValue = new Date(field.value).toLocaleDateString('pt-BR')
-    }
-
-    return formattedValue;
   }
 
   if (loading) {
