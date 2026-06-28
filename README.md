@@ -35,8 +35,8 @@ O banco já sobe populado com 2 tenants, templates estruturados e 5 contratos. U
 
 - **Next.js vs Vite:** A especificação citava ambos. Optei pelo Next.js (App Router) por seu ecossistema nativo e robustez, sendo a escolha ideal para escalar um SaaS.
 - **Multi-tenancy Real:** O `tenantId` é extraído via JWT e injetado diretamente nas consultas do Prisma. Isso garante isolamento em nível de banco, prevenindo vazamento de dados entre empresas.
-- **Imutabilidade de Contratos:** Para que edições no *Template* não afetem os contratos antigos, o sistema salva um *snapshot* (cópia estrutural no formato `Json`) do template no momento exato em que o contrato é gerado.
-- **Auditoria / Histórico:** Qualquer mutação em um contrato (criação, edição de campos ou status) grava automaticamente um registro estruturado na tabela `AuditLog`, contendo o valor antigo e o novo.
+- **Imutabilidade de Contratos:** Para que edições no *Template* não afetem os contratos antigos, o backend salva um *snapshot* (cópia estrutural no formato `Json`) do template no momento exato em que o contrato é gerado.
+- **Histórico:** Qualquer mutação em um contrato (criação, edição de campos ou status) grava automaticamente um registro estruturado na tabela `ContractHistory`, contendo o valor antigo e o novo.
 - **Trade-offs (Escopo MVP):** Para focar nos requisitos core, o *refresh token* é gerado no backend, mas sem a lógica de renovação automática/interceptors no frontend. O controle de desatualização de templates exigiria versionamento (`v1`, `v2`), o que mantive fora desta versão.
 
 ---
