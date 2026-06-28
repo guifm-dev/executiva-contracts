@@ -12,15 +12,25 @@ import { api } from "@/lib/api";
 
 interface AuthContextType {
   token: string | null;
+  role: string | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+}
+
+function decodeRole(token: string): string | null {
+  try {
+    return JSON.parse(atob(token.split(".")[1])).role ?? null;
+  } catch {
+    return null;
+  }
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
+  const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   const router = useRouter();
@@ -28,7 +38,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (typeof window !== undefined) {
       const stored = localStorage.getItem("accessToken");
-      if (stored) setToken(stored);
+      if (stored) {
+        setToken(stored);
+        setRole(decodeRole(stored));
+      }
 
       setLoading(false);
     }
@@ -41,6 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("refreshToken", data.refreshToken);
 
     setToken(data.accessToken);
+    setRole(decodeRole(data.accessToken));
     // router.push("/dashboard");
   }
 
@@ -48,11 +62,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
     setToken(null);
+    setRole(null);
     router.push("/login");
   }
 
   return (
-    <AuthContext.Provider value={{ token, loading, login, logout }}>
+    <AuthContext.Provider value={{ token, role, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
