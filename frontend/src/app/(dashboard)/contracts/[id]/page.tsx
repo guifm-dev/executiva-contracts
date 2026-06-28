@@ -223,7 +223,7 @@ export default function ContractDetailPage() {
 
                   <span className="text-slate-300">|</span>
                   <span className="text-xs text-slate-400">
-                    {new Date(entry.changedAt).toLocaleString("pt-BR")}
+                    {new Date(entry.changedAt).toLocaleString("pt-BR", { dateStyle: 'short', timeStyle: 'short' })}
                   </span>
                 </div>
               </div>
