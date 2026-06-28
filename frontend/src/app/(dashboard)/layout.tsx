@@ -7,18 +7,12 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { LayoutDashboard, FileText, Settings, LogOut } from "lucide-react";
 
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/contracts", label: "Contratos", icon: FileText },
-  { href: "/template", label: "Template", icon: Settings },
-];
-
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { token, loading, logout } = useAuth();
+  const { token, loading, logout, role } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -27,6 +21,14 @@ export default function DashboardLayout({
       router.push("/login");
     }
   }, [token, loading, router]);
+
+  const navItems = [
+    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/contracts", label: "Contratos", icon: FileText },
+    ...(role === "ADMIN"
+      ? [{ href: "/template", label: "Template", icon: Settings }]
+      : []),
+  ];
 
   if (loading || !token) return null;
 
@@ -60,16 +62,18 @@ export default function DashboardLayout({
         </nav>
 
         <div className="p-4 border-t border-slate-200">
-          <Button variant="ghost" className="w-full justify-start gap-3 text-slate-600 hover:text-red-600" onClick={logout}>
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-3 text-slate-600 hover:text-red-600"
+            onClick={logout}
+          >
             <LogOut size={16} />
             Sair
           </Button>
         </div>
       </aside>
 
-      <main className="flex-1 p-8 overflow-auto">
-        {children}
-      </main>
+      <main className="flex-1 p-8 overflow-auto">{children}</main>
     </div>
   );
 }
