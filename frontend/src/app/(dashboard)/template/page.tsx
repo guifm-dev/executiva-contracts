@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -13,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { Trash2, Plus, GripVertical, Save } from "lucide-react";
+import { Trash2, Plus, Save, ChevronUp, ChevronDown } from "lucide-react";
 
 type FieldType = "TEXT" | "NUMBER" | "DATE" | "BOOLEAN";
 
@@ -31,10 +30,10 @@ const TYPE_LABELS: Record<FieldType, string> = {
 };
 
 const TYPE_COLORS: Record<FieldType, string> = {
-  TEXT: "bg-blue-50 text-blue-700",
-  NUMBER: "bg-purple-50 text-purple-700",
-  DATE: "bg-orange-50 text-orange-700",
-  BOOLEAN: "bg-green-50 text-green-700",
+  TEXT: "bg-slate-50 text-slate-700",
+  NUMBER: "bg-slate-50 text-slate-700",
+  DATE: "bg-slate-50 text-slate-700",
+  BOOLEAN: "bg-slate-50 text-slate-700",
 };
 
 export default function TemplatePage() {
@@ -62,6 +61,16 @@ export default function TemplatePage() {
     setFields((prev) =>
       prev.map((f, i) => (i === index ? { ...f, ...patch } : f)),
     );
+  }
+
+  function moveField(index: number, direction: "up" | "down") {
+    setFields((prev) => {
+      const next = [...prev];
+      const target = direction === "up" ? index - 1 : index + 1;
+      if (target < 0 || target >= next.length) return prev;
+      [next[index], next[target]] = [next[target], next[index]];
+      return next;
+    });
   }
 
   async function save() {
@@ -111,7 +120,22 @@ export default function TemplatePage() {
             key={index}
             className="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-lg group"
           >
-            <GripVertical size={16} className="text-slate-300 shrink-0" />
+            <div className="flex flex-col gap-0.5">
+              <button
+                onClick={() => moveField(index, "up")}
+                disabled={index === 0}
+                className="text-slate-300 hover:text-slate-500 disabled:opacity-20 transition-colors"
+              >
+                <ChevronUp size={14} />
+              </button>
+              <button
+                onClick={() => moveField(index, "down")}
+                disabled={index === fields.length - 1}
+                className="text-slate-300 hover:text-slate-500 disabled:opacity-20 transition-colors"
+              >
+                <ChevronDown size={14} />
+              </button>
+            </div>
 
             <Input
               placeholder="Nome do campo"
