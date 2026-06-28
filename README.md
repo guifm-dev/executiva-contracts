@@ -33,12 +33,12 @@ O banco já sobe com 2 tenants e 5 contratos. Pode usar esses logins na tela ini
 
 ## Resumo das Decisões Técnicas
 
-- **Next.js:** A especificação mencionava Next.js e Vite como obrigatórios simultaneamente, o que é incompatível — Next.js possui bundler próprio (Webpack/Turbopack). Optei por seguir o padrão oficial do framework com Next.js 15 e App Router.
-- **Isolamento de Dados (Multi-tenancy):** Adotei row-level tenancy — toda tabela relevante possui `tenantId`. A API valida o tenant via payload do JWT e injeta o filtro em todas as queries do Prisma, garantindo isolamento real entre empresas.
+- **Next.js:** A especificação mencionava Next.js e Vite como obrigatórios simultaneamente, o que é incompatível — Next.js possui bundler próprio (Webpack/Turbopack). Optei por seguir o padrão oficial do framework com Next.js e App Router.
+- **Multi-tenancy:** Adotei row-level tenancy — toda tabela relevante possui `tenantId`. A API valida o tenant via payload do JWT e injeta o filtro em todas as queries do Prisma, garantindo isolamento real entre tenants.
 - **Contratos e Templates:** Ao criar um contrato, os campos do template ativo são copiados como `ContractFieldValue`, criando um snapshot imutável. Alterações futuras no template não afetam contratos já gerados.
 - **Histórico de Alterações:** Toda criação, edição de campo ou mudança de status registra uma entrada em `ContractHistory` com campo, valor anterior, valor novo, usuário e timestamp.
-- **Autenticação:** JWT com access token (15min) e refresh token (7d). No frontend os tokens são armazenados em localStorage — decisão pragmática para o escopo do teste. Em produção usaria httpOnly cookies para mitigar XSS.
-- **Simplificações documentadas:** Renovação automática via refresh token não foi implementada no frontend (exigiria interceptor com fila de retry). Versionamento de templates também foi omitido por estar fora do escopo do teste.
+- **Autenticação:** JWT com access token (15min) e refresh token (7d). No frontend os tokens são armazenados em localStorage.
+- **Simplificações documentadas:** Renovação automática via refresh token não foi implementada no frontend. Versionamento de templates também foi omitido por estar fora do escopo do teste.
 
 ## Testes
 
