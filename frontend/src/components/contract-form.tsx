@@ -17,6 +17,8 @@ interface TemplateField {
 interface FieldValue {
   name: string;
   value: string;
+  type?: string;
+  required?: boolean;
 }
 
 interface Props {
@@ -32,6 +34,13 @@ const INPUT_TYPE: Record<string, string> = {
   BOOLEAN: "checkbox",
 };
 
+const INPUT_LABEL: Record<string, string> = {
+  TEXT: "Texto",
+  NUMBER: "Número",
+  DATE: "Data",
+  BOOLEAN: "Sim/Não",
+};
+
 export default function ContractForm({
   contractId,
   initialValues,
@@ -45,21 +54,29 @@ export default function ContractForm({
   const [error, setError] = useState("");
 
   useEffect(() => {
-    api.template.get().then((t) => {
-      setFields(t.fields ?? []);
+    if (contractId && initialValues && initialValues.length > 0) {
+      setFields(
+        initialValues.map((v) => ({
+          id: v.name,
+          name: v.name,
+          type: v.type ?? "TEXT",
+          required: v.required ?? false,
+        })),
+      );
 
-      if (initialValues) {
-        const map: Record<string, string> = {};
-
-        for (const v of initialValues) {
-          map[v.name] = v.value ?? "";
-        }
-
-        setValues(map);
+      const map: Record<string, string> = {};
+      for (const v of initialValues) {
+        map[v.name] = v.value ?? "";
       }
 
+      setValues(map);
       setLoading(false);
-    });
+    } else {
+      api.template.get().then((t) => {
+        setFields(t.fields ?? []);
+        setLoading(false);
+      });
+    }
   }, []);
 
   function setValue(name: string, value: string) {
@@ -84,9 +101,7 @@ export default function ContractForm({
         contractId = createdContract.id;
       }
 
-      onSuccess
-        ? onSuccess()
-        : router.push(`/contracts/${contractId}`);
+      onSuccess ? onSuccess() : router.push(`/contracts/${contractId}`);
     } catch (err: any) {
       setError(err.message ?? "Erro ao salvar contrato");
     } finally {
@@ -116,7 +131,7 @@ export default function ContractForm({
             {field.name}
             {field.required && <span className="text-red-500 ml-1">*</span>}
             <span className="text-xs text-slate-400 ml-2 font-normal">
-              {field.type}
+              {INPUT_LABEL[field.type]}
             </span>
           </Label>
 
