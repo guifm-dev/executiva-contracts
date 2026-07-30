@@ -1,17 +1,17 @@
-# Executiva Contracts - Desafio Técnico
+# Executiva Contracts
 
-Plataforma multi-tenant para gestão de contratos, desenvolvida para o processo seletivo com NestJS, Next.js, Prisma e PostgreSQL.
+A multi-tenant contract management platform developed using NestJS, Next.js, Prisma, and PostgreSQL.
 
-## Como rodar o projeto
+## How to run the project
 
-Com o Docker instalado, abra o terminal na raiz do projeto e rode:
+With Docker installed, open your terminal in the project root and run:
 
 ```bash
 cp .env.example .env
 docker compose up --build
 ```
 
-O backend vai rodar as migrations e popular o banco com dados de teste (seed) automaticamente.
+The backend will automatically run migrations and populate the database with seed data.
 
 - **Frontend:** <http://localhost:3000>
 - **API:** <http://localhost:3001/api>
@@ -19,37 +19,35 @@ O backend vai rodar as migrations e popular o banco com dados de teste (seed) au
 
 ---
 
-## Seed
+## Seeding
 
-O banco já sobe com 2 tenants e 5 contratos. Pode usar esses logins na tela inicial:
+The database initializes with 2 tenants and 5 contracts. You can use these credentials on the login screen:
 
-| Perfil | E-mail | Senha | Tenant |
+| Profile | Email | Password | Tenant |
 | :--- | :--- | :--- | :--- |
-| **Admin** | `admin@alpha.com` | `123456` | Escritório Alpha |
-| **Viewer** | `viewer@alpha.com` | `123456` | Escritório Alpha |
-| **Admin** | `admin@beta.com` | `123456` | Advocacia Beta |
+| **Admin** | `admin@alpha.com` | `123456` | Company Alpha |
+| **Viewer** | `viewer@alpha.com` | `123456` | Company Alpha |
+| **Admin** | `admin@beta.com` | `123456` | Advocacy Beta |
 
 ---
 
-## Resumo das Decisões Técnicas
+## Summary of Technical Decisions
 
-- **Next.js:** A especificação mencionava Next.js e Vite como obrigatórios simultaneamente, o que é incompatível — Next.js possui bundler próprio (Webpack/Turbopack). Optei por seguir o padrão oficial do framework com Next.js e App Router.
-- **Multi-tenancy:** Adotei row-level tenancy — toda tabela relevante possui `tenantId`. A API valida o tenant via payload do JWT e injeta o filtro em todas as queries do Prisma, garantindo isolamento real entre tenants.
-- **Contratos e Templates:** Ao criar um contrato, os campos do template ativo são copiados como `ContractFieldValue`, criando um snapshot imutável. Alterações futuras no template não afetam contratos já gerados.
-- **Histórico de Alterações:** Toda criação, edição de campo ou mudança de status registra uma entrada em `ContractHistory` com campo, valor anterior, valor novo, usuário e timestamp.
-- **Autenticação:** JWT com access token (15min) e refresh token (7d). No frontend os tokens são armazenados em localStorage.
-- **Simplificações documentadas:** Renovação automática via refresh token não foi implementada no frontend. Versionamento de templates também foi omitido por estar fora do escopo do teste.
+- **Multi-tenancy:** I implemented row-level tenancy—every relevant table includes a `tenantId`. The API validates the tenant via the JWT payload and injects the filter into all Prisma queries, ensuring true tenant isolation.
+- **Contracts and Templates:** When creating a contract, fields from the active template are copied as `ContractFieldValue` records, creating an immutable snapshot. Future changes to the template do not affect contracts that have already been generated. - **Change History:** Every creation, field edit, or status change records an entry in `ContractHistory` containing the field, previous value, new value, user, and timestamp.
+- **Authentication:** JWT with access token (15 min) and refresh token (7 days). Tokens are stored in `localStorage` on the frontend.
+- **Documented Simplifications:** Automatic renewal via refresh token was not implemented on the frontend. Template versioning was also omitted as it was out of scope for the test.
 
-## Testes
+## Tests
 
 ```bash
 cd backend
 npm run test:e2e
 ```
 
-5 testes E2E cobrindo: onboarding, autenticação, fluxo completo de contrato e rastreabilidade do histórico.
+5 E2E tests covering: onboarding, authentication, the complete contract workflow, and history traceability.
 
-## Scripts Úteis
+## Useful Scripts
 
 ```bash
 # Backend
